@@ -3080,7 +3080,7 @@ function initCountryView() {
 function initCountryLayer() {
   //color scale
   var clrRange = (currentCountryIndicator.id=='#population') ? populationColorRange : colorRange;
-  var countryColorScale = d3.scaleQuantize().domain([0, 1]).range(clrRange);
+  var countryColorScale = (currentCountryIndicator.id=='#population') ? d3.scaleOrdinal().domain(['0.1', '0.2', '0.5', '1', '2', '5', '10']).range(clrRange) : d3.scaleQuantize().domain([0, 1]).range(clrRange);
   createCountryLegend(countryColorScale);
 
   //mouse events
@@ -3135,7 +3135,7 @@ function initCountryLayer() {
 
    //refugee count data
   let refugeeCounts = [];
-  let maxCount = d3.max(refugeeCountData, function(d) { return +d.individuals; });
+  let maxCount = d3.max(nationalData, function(d) { return +d['#affected+refugees']; });
   let refugeeDotScale = d3.scaleSqrt()
     .domain([1, maxCount])
     .range([5, 45]);
@@ -3310,6 +3310,7 @@ function updateCountryLayer() {
   }
   var countryColorScale = d3.scaleQuantize().domain([0, max]).range(clrRange);
 
+
   //data join
   var expression = ['match', ['get', 'ADM1_PCODE']];
   var expressionBoundary = ['match', ['get', 'ADM1_PCODE']];
@@ -3356,10 +3357,19 @@ function updateCountryLayer() {
   map.setPaintProperty(countryLabelLayer, 'text-opacity', expressionOpacity);
 
   //hide color scale if no data
-  if (max!=undefined && max>0)
+  if (max!=undefined && max>0) {
+    if (currentCountryIndicator.id=='#population') {
+      $('.map-legend.country .legend-container').addClass('population');
+      countryColorScale = d3.scaleOrdinal().domain(['0.1', '0.2', '0.5', '1', '2', '5', '10']).range(clrRange)
+    }
+    else {
+      $('.map-legend.country .legend-container').removeClass('population');
+    }
     updateCountryLegend(countryColorScale);
-  else
+  }
+  else {
     $('.map-legend.country .legend-container').addClass('no-data');
+  }
 }
 
 function getIPCDataSource() {
@@ -3445,8 +3455,8 @@ function createCountryLegend(scale) {
 
   borderCrossing.append('image')
     .attr('href', 'assets/marker-crossing.png')
-    .attr('height', 12)
-    .attr('width', 12);
+    .attr('height', 15)
+    .attr('width', 15);
 
   borderCrossing.append('text')
     .attr('class', 'label')
@@ -3978,12 +3988,19 @@ function initCountryPanel() {
   //data updated
   let lastUpdate = moment(ukrKeyFigures['#date'], ['MM-DD-YYYY']).format('ll');
 
+  let test = d3.sum(nationalData, d => +d['#affected+refugees'] );
+  console.log(test)
+
   //refugees
   var refugeesDiv = $('.country-panel .refugees .panel-inner');
-  createFigure(refugeesDiv, {className: 'refugees', title: 'Refugee arrivals from Ukraine', stat: shortenNumFormat(1735068), indicator: '#affected+ind'});
-  createFigure(refugeesDiv, {className: 'pin', title: 'People in Need', stat: shortenNumFormat(data['#inneed+ind']), indicator: '#inneed+ind'});
+  createFigure(refugeesDiv, {className: 'refugees', title: 'Refugee arrivals from Ukraine', stat: shortenNumFormat(1735068), indicator: ''});
+  createFigure(refugeesDiv, {className: 'pin', title: 'People in Need', stat: shortenNumFormat(data['#inneed+ind']), indicator: ''});//#inneed+ind
   createFigure(refugeesDiv, {className: 'casualties-killed', title: 'Civilian Casualties - Killed', stat: ukrKeyFigures['#affected+killed'], indicator: ''});
   createFigure(refugeesDiv, {className: 'casualties-injured', title: 'Civilian Casualties - Injured', stat: ukrKeyFigures['#affected+injured'], indicator: ''});
+  refugeesDiv.find('.refugees .figure-inner').append('<p class="small source"><span class="date">Mar 08, 2022</span> | <span class="source-name">UNHCR</span> | <a href="https://data.humdata.org/organization/unhcr" class="dataURL" target="_blank" rel="noopener">DATA</a></p>');
+  refugeesDiv.find('.pin .figure-inner').append('<p class="small source"><span class="date">Mar 08, 2022</span> | <span class="source-name">UNHCR</span> | <a href="https://data.humdata.org/organization/unhcr" class="dataURL" target="_blank" rel="noopener">DATA</a></p>');
+  refugeesDiv.find('.casualties-killed .figure-inner').append('<p class="small source"><span class="date">Mar 08, 2022</span> | <span class="source-name">OHCHR</span> | <a href="" class="dataURL" target="_blank" rel="noopener">DATA</a></p>');
+  refugeesDiv.find('.casualties-injured .figure-inner').append('<p class="small source"><span class="date">Mar 08, 2022</span> | <span class="source-name">OHCHR</span> | <a href="" class="dataURL" target="_blank" rel="noopener">DATA</a></p>');
   
   //funding
   var fundingDiv = $('.country-panel .funding .panel-inner');
@@ -4015,7 +4032,7 @@ var colorRange = ['#F7FCB9','#ADDD8E','#41AB5D','#238443','#005A32'];
 var informColorRange = ['#FFE8DC','#FDCCB8','#FC8F6F','#F43C27','#961518'];
 var immunizationColorRange = ['#CCE5F9','#99CBF3','#66B0ED','#3396E7','#027CE1'];
 //var populationColorRange = ['#FFE281','#FDB96D','#FA9059','#F27253','#E9554D'];
-var populationColorRange = ['#F7FCB9','#ADDD8E','#41ab5d','#238443','#005A32'];
+var populationColorRange = ['#f7fcb9', '#d9f0a3', '#addd8e', '#78c679', '#41ab5d', '#238443', '#005a32'];
 //#f7fcb9, #d9f0a3, #addd8e, #78c679, #41ab5d, #238443, #005a32
 var accessColorRange = ['#79B89A','#F6B98E','#C74B4F'];
 var oxfordColorRange = ['#ffffd9','#c7e9b4','#41b6c4','#225ea8','#172976'];
@@ -4130,7 +4147,6 @@ $( document ).ready(function() {
       dataByCountry = d3.nest()
         .key(function(d) { return d['#country+code']; })
         .object(nationalData);
-      console.log(dataByCountry)
 
       //consolidate subnational IPC data
       subnationalDataByCountry = d3.nest()
