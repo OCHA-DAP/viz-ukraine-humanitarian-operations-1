@@ -1828,6 +1828,8 @@ a:visited {
   .map-legend svg {
     margin-top: 5px;
     width: 190px; }
+    .map-legend svg.border-crossing-key, .map-legend svg.refugee-count-key, .map-legend svg.hostilities-key {
+      margin-top: 0; }
   .map-legend .toggle-icon:before {
     color: #000;
     content: '\e94b';
@@ -1846,18 +1848,21 @@ a:visited {
   .map-legend .no-data-key,
   .map-legend .special-key,
   .map-legend .border-crossing-key,
-  .map-legend .refugee-count-key {
+  .map-legend .refugee-count-key,
+  .map-legend .hostilities-key {
     height: 20px; }
     .map-legend .no-data-key rect,
     .map-legend .special-key rect,
     .map-legend .border-crossing-key rect,
-    .map-legend .refugee-count-key rect {
+    .map-legend .refugee-count-key rect,
+    .map-legend .hostilities-key rect {
       fill: #FFF;
       stroke: #CCC; }
     .map-legend .no-data-key text,
     .map-legend .special-key text,
     .map-legend .border-crossing-key text,
-    .map-legend .refugee-count-key text {
+    .map-legend .refugee-count-key text,
+    .map-legend .hostilities-key text {
       transform: translate(25px, 12.5px); }
   .map-legend .special-key {
     display: none; }
@@ -2118,6 +2123,9 @@ table.immunization-table {
 
 .cases-timeseries p {
   margin-top: 0; }
+
+.refugees-timeseries .source {
+  padding-left: 20px; }
 
 .country-timeseries-chart .timeseries-legend {
   background-color: rgba(255, 255, 255, 0.5);
