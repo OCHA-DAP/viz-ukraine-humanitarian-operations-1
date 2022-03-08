@@ -3388,7 +3388,7 @@ function createCountryLegend(scale) {
   createSource($('.map-legend.country .population-source'), '#population');
   createSource($('.map-legend.country .health-facilities-source'), '#loc+count+health');
 
-  let title = (currentCountryIndicator.id=='#population') ? 'Population Density (people per sq km' : 'Legend';
+  let title = (currentCountryIndicator.id=='#population') ? 'Population Density (people per sq km)' : 'Legend';
   $('.legend-title').html(title);
 
   var legend = d3.legendColor()
