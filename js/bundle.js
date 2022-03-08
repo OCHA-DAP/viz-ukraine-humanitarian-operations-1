@@ -3470,7 +3470,7 @@ function updateCountryLegend(scale) {
   var legendFormat, legendTitle;
   if (currentCountryIndicator.id=='#population') {
     legendFormat = shortenNumFormat;
-    legendTitle = 'Population Density (people per sq km';
+    legendTitle = 'Population Density (people per sq km)';
   
   }
   else {
