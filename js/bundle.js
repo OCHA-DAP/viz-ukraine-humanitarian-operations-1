@@ -450,7 +450,7 @@ function createTimeSeries2(array, div) {
       },
       y: {
         min: 0,
-        padding: { top:0, bottom:0 },
+        padding: { top: 0, bottom: 0 },
         tick: { 
           outer: false,
           format: numFormat
@@ -505,7 +505,7 @@ function updateTimeseries(selected) {
   var maxValue = d3.max(countryTimeseriesChart.data(selected)[0].values, function(d) { return +d.value; });
   if (selected=='Venezuela (Bolivarian Republic of)') selected = 'Venezuela';
 
-  countryTimeseriesChart.axis.max(maxValue*2);
+  countryTimeseriesChart.axis.max(maxValue*1.6);
   countryTimeseriesChart.focus(selected);
   $('.country-timeseries-chart .c3-chart-lines .c3-line').css('stroke', '#999');
   $('.country-timeseries-chart .c3-chart-lines .c3-line-'+selected).css('stroke', '#007CE1');
