@@ -1747,8 +1747,7 @@ function transitionBarChart(data){
 
 
 function vizTrack(view, content) {
-  // mpTrack(view, content);
-  // gaTrack('viz interaction', 'switch viz', 'oad covid-19 / '+view, content);
+  mpTrack(view, content);
 }
 
 function mpTrack(view, content) {
@@ -1760,15 +1759,6 @@ function mpTrack(view, content) {
     'viz type': 'oad covid-19',
     'current view': view,
     'content': content
-  });
-}
-
-function gaTrack(eventCategory, eventAction, eventLabel, type) {
-  ga('send', 'event', eventCategory, eventAction, eventLabel, {
-    'dimension2': type,
-    hitCallback: function() {
-      console.log('Finishing sending click event to GA')
-    }
   });
 }
 
@@ -2510,14 +2500,14 @@ function createEvents() {
   // });
 
   //country panel indicator select event
-  d3.select('.indicator-select').on('change',function(e) {
-    var selected = d3.select('.indicator-select').node().value;
-    if (selected!='') {
-      var container = $('.panel-content');
-      var section = $('.'+selected);
-      container.animate({scrollTop: section.offset().top - container.offset().top + container.scrollTop()}, 300);
-    }
-  });
+  // d3.select('.indicator-select').on('change',function(e) {
+  //   var selected = d3.select('.indicator-select').node().value;
+  //   if (selected!='') {
+  //     var container = $('.panel-content');
+  //     var section = $('.'+selected);
+  //     container.animate({scrollTop: section.offset().top - container.offset().top + container.scrollTop()}, 300);
+  //   }
+  // });
 
   //country legend radio events
   $('input[type="radio"]').click(function(){
@@ -4222,9 +4212,6 @@ $( document ).ready(function() {
         'link type': 'download report',
         'page title': document.title
       });
-
-      //google analytics event
-      gaTrack('oad covid-19 link', $(this).attr('href'), 'download report', document.title);
     });
 
     //show/hide NEW label for monthly report
@@ -4249,9 +4236,6 @@ $( document ).ready(function() {
         'link type': 'download report',
         'page title': document.title
       });
-
-      //google analytics event
-      gaTrack('oad covid-19 link', $(this).attr('href'), 'download report', document.title);
     });
 
     //load timeseries for country view 

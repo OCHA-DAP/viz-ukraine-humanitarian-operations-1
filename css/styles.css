@@ -1897,7 +1897,9 @@ a:visited {
         .map-legend.country .legend-container.no-data .legendCells {
           display: none; }
       .map-legend.country .legend-container.population {
-        height: 150px; }
+        height: 160px; }
+      .map-legend.country .legend-container.population + .no-data-key {
+        display: none; }
     .map-legend.country .source-container {
       margin-left: 18px; }
   .map-legend.collapsed {
