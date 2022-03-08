@@ -1888,7 +1888,7 @@ a:visited {
     .map-legend.country .legend-title {
       margin-top: 20px; }
     .map-legend.country .legend-container {
-      height: 87px;
+      height: 92px;
       overflow: visible;
       transform: translate(0px, 5px); }
       .map-legend.country .legend-container.no-data {
@@ -1896,11 +1896,21 @@ a:visited {
         .map-legend.country .legend-container.no-data .legendCells {
           display: none; }
       .map-legend.country .legend-container.population {
-        height: 135px; }
-      .map-legend.country .legend-container.population + .no-data-key {
-        display: none; }
+        height: 130px; }
     .map-legend.country .source-container {
-      margin-left: 18px; }
+      margin-left: 19px; }
+    .map-legend.country .legend-marker {
+      display: flex;
+      padding-top: 8px; }
+      .map-legend.country .legend-marker .marker {
+        margin-right: 6px; }
+        .map-legend.country .legend-marker .marker img {
+          height: 14px;
+          width: 14px; }
+      .map-legend.country .legend-marker label {
+        margin-top: 0; }
+    .map-legend.country .footnote {
+      margin-top: 15px; }
   .map-legend.collapsed {
     height: 35px !important;
     overflow-y: hidden;
@@ -2127,8 +2137,10 @@ table.immunization-table {
 .cases-timeseries p {
   margin-top: 0; }
 
-.refugees-timeseries .source {
-  padding-left: 20px; }
+.refugees-timeseries {
+  display: none; }
+  .refugees-timeseries .source {
+    padding-left: 20px; }
 
 .country-timeseries-chart .timeseries-legend {
   background-color: rgba(255, 255, 255, 0.5);
