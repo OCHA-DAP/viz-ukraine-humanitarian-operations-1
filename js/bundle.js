@@ -3071,7 +3071,7 @@ function initCountryView() {
 function initCountryLayer() {
   //color scale
   var clrRange = (currentCountryIndicator.id=='#population') ? populationColorRange : colorRange;
-  var countryColorScale = (currentCountryIndicator.id=='#population') ? d3.scaleOrdinal().domain(['0.1', '0.2', '0.5', '1', '2', '5', '10']).range(clrRange) : d3.scaleQuantize().domain([0, 1]).range(clrRange);
+  var countryColorScale = (currentCountryIndicator.id=='#population') ? d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(clrRange) : d3.scaleQuantize().domain([0, 1]).range(clrRange);
   createCountryLegend(countryColorScale);
 
   //mouse events
@@ -3082,17 +3082,27 @@ function initCountryLayer() {
 
   map.on('mousemove', countryLayer, function(e) {
     var f = map.queryRenderedFeatures(e.point)[0];
-    if (f.properties.ADM0_EN=='State of Palestine' || f.properties.ADM0_EN=='Venezuela (Bolivarian Republic of)') f.properties.ADM0_EN = currentCountry.name;
-    if (f.properties.ADM0_PCODE!=undefined && f.properties.ADM0_EN==currentCountry.name) {
-      map.getCanvas().style.cursor = 'pointer';
-      createCountryMapTooltip(f.properties.ADM1_EN);
+    if (f.layer.id=='adm1-fills') {
+      if (f.properties.ADM0_EN=='State of Palestine' || f.properties.ADM0_EN=='Venezuela (Bolivarian Republic of)') f.properties.ADM0_EN = currentCountry.name;
+      if (f.properties.ADM0_PCODE!=undefined && f.properties.ADM0_EN==currentCountry.name) {
+        map.getCanvas().style.cursor = 'pointer';
+        createCountryMapTooltip(f.properties.ADM1_EN);
+        tooltip
+          .addTo(map)
+          .setLngLat(e.lngLat);
+      }
+      else {
+        map.getCanvas().style.cursor = '';
+        tooltip.remove();
+      }
+    }
+    else {
+      // if (f.layer.id=='town-labels') {
+      //   console.log(f)
+      // }
       tooltip
         .addTo(map)
         .setLngLat(e.lngLat);
-    }
-    else {
-      map.getCanvas().style.cursor = '';
-      tooltip.remove();
     }
   });
      
@@ -3353,7 +3363,7 @@ function updateCountryLayer() {
   if (max!=undefined && max>0) {
     if (currentCountryIndicator.id=='#population') {
       $('.map-legend.country .legend-container').addClass('population');
-      countryColorScale = d3.scaleOrdinal().domain(['0.1', '0.2', '0.5', '1', '2', '5', '10']).range(clrRange)
+      countryColorScale = d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(clrRange)
     }
     else {
       $('.map-legend.country .legend-container').removeClass('population');
