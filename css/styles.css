@@ -1885,19 +1885,18 @@ a:visited {
     z-index: -1; }
     .map-legend.country label {
       margin-top: 10px; }
+    .map-legend.country .legend-title {
+      margin-top: 20px; }
     .map-legend.country .legend-container {
-      height: 118px;
+      height: 87px;
       overflow: visible;
-      transform: translate(0px, 20px); }
-      .map-legend.country .legend-container .legendTitle {
-        font-family: 'Gotham-Bold', sans-serif;
-        letter-spacing: 0.2px; }
+      transform: translate(0px, 5px); }
       .map-legend.country .legend-container.no-data {
         height: 20px; }
         .map-legend.country .legend-container.no-data .legendCells {
           display: none; }
       .map-legend.country .legend-container.population {
-        height: 160px; }
+        height: 135px; }
       .map-legend.country .legend-container.population + .no-data-key {
         display: none; }
     .map-legend.country .source-container {

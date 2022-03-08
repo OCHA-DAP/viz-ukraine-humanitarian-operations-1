@@ -2514,7 +2514,7 @@ function createEvents() {
     var selected = $('input[name="countryIndicators"]:checked');
     currentCountryIndicator = {id: selected.val(), name: selected.parent().text()};
     updateCountryLayer();
-    vizTrack(currentCountry.code, currentCountryIndicator.name);
+    vizTrack(`main ${currentCountry.code} view`, currentCountryIndicator.name);
   });
 }
 
@@ -2624,7 +2624,7 @@ function selectCountry(features) {
   });
 
   map.once('moveend', initCountryView);
-  vizTrack(currentCountry.code, currentCountryIndicator.name);
+  //vizTrack(`main ${currentCountry.code} view`, currentCountryIndicator.name);
 
   //append country code to url
   //window.history.replaceState(null, null, '?c='+currentCountry.code);
@@ -3388,10 +3388,12 @@ function createCountryLegend(scale) {
   createSource($('.map-legend.country .population-source'), '#population');
   createSource($('.map-legend.country .health-facilities-source'), '#loc+count+health');
 
+  let title = (currentCountryIndicator.id=='#population') ? 'Population Density (people per sq km' : 'Legend';
+  $('.legend-title').html(title);
+
   var legend = d3.legendColor()
     .labelFormat(percentFormat)
     .cells(colorRange.length)
-    .title('LEGEND')
     .scale(scale);
 
   var div = d3.select('.map-legend.country');
@@ -3465,11 +3467,18 @@ function createCountryLegend(scale) {
 }
 
 function updateCountryLegend(scale) {
-  var legendFormat;
-  if (currentCountryIndicator.id=='#population')
+  var legendFormat, legendTitle;
+  if (currentCountryIndicator.id=='#population') {
     legendFormat = shortenNumFormat;
-  else
+    legendTitle = 'Population Density (people per sq km';
+  
+  }
+  else {
     legendFormat = d3.format('.0f');
+    legendTitle = 'Legend';
+  }
+
+  $('.map-legend.country .legend-title').html(legendTitle);
 
   var legend = d3.legendColor()
     .labelFormat(legendFormat)
