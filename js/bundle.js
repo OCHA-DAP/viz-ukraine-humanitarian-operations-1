@@ -3402,8 +3402,8 @@ function updateCountryLayer() {
     map.setLayoutProperty(id+'-popdensity', 'visibility', 'visible');
   }
   map.setPaintProperty(countryLayer, 'fill-color', expression);
-  map.setPaintProperty(countryBoundaryLayer, 'line-opacity', expressionOpacity);
-  map.setPaintProperty(countryBoundaryLayer, 'line-color', expressionBoundary);
+  //map.setPaintProperty(countryBoundaryLayer, 'line-opacity', expressionOpacity);
+  map.setPaintProperty(countryBoundaryLayer, 'line-color', '#C4C4C4');//expressionBoundary
   map.setPaintProperty(countryLabelLayer, 'text-opacity', expressionOpacity);
 
   //hide color scale if no data
