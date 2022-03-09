@@ -1749,7 +1749,7 @@ function transitionBarChart(data){
 
 function vizTrack(view, content) {
   mpTrack(view, content);
-  gaTrack('viz interaction', 'switch viz', 'oad covid-19 / '+view, content);
+  gaTrack('viz interaction', 'switch viz', 'ukr data explorer / '+view, content);
 }
 
 function mpTrack(view, content) {
