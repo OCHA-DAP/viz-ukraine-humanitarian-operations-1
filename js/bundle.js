@@ -1749,6 +1749,7 @@ function transitionBarChart(data){
 
 function vizTrack(view, content) {
   mpTrack(view, content);
+  gaTrack('viz interaction', 'switch viz', 'oad covid-19 / '+view, content);
 }
 
 function mpTrack(view, content) {
@@ -1760,6 +1761,15 @@ function mpTrack(view, content) {
     'viz type': 'ukr data explorer',
     'current view': view,
     'content': content
+  });
+}
+
+function gaTrack(eventCategory, eventAction, eventLabel, type) {
+  ga('send', 'event', eventCategory, eventAction, eventLabel, {
+    'dimension2': type,
+    hitCallback: function() {
+      console.log('Finishing sending click event to GA')
+    }
   });
 }
 
