@@ -422,7 +422,7 @@ function createTimeSeries2(array, div) {
     padding: {
       bottom: 0,
       top: 10,
-      left: 50,
+      left: 35,
       right: 30
     },
     bindto: div,
@@ -444,31 +444,43 @@ function createTimeSeries2(array, div) {
       }
     },
     point: { show: false },
+    grid: {
+      y: {
+        show: true
+      }
+    },
     axis: {
       x: {
-        type: 'timeseries'
+        type: 'timeseries',
+        tick: { 
+          outer: false
+        }
       },
       y: {
         min: 0,
         padding: { top: 0, bottom: 0 },
         tick: { 
           outer: false,
-          format: numFormat
+          format: shortenNumFormat
         }
       }
     },
     legend: {
-      show: false,
-      // position: 'inset',
-      // inset: {
-      //   anchor: 'top-left',
-      //   x: 10,
-      //   y: 0,
-      //   step: 8
-      // }
+      show: false
     },
-    tooltip: { grouped: false },
-    transition: { duration: 300 }
+    transition: { duration: 300 },
+    tooltip: {
+      grouped: false,
+      format: {
+        title: function (d) { 
+          let date = new Date(d);
+          return moment(d).format('M/D/YY');
+        },
+        value: function (value, ratio, id) {
+          return numFormat(value);
+        }
+      }
+    }
   });
 
   // createTimeseriesLegend(chart);
@@ -3993,7 +4005,7 @@ function initCountryPanel() {
 
   //refugees
   var refugeesDiv = $('.country-panel .refugees .panel-inner');
-  createFigure(refugeesDiv, {className: 'refugees', title: 'Refugee arrivals from Ukraine', stat: shortenNumFormat(regionalData['#affected+refugees']), indicator: '#affected+refugees'});
+  createFigure(refugeesDiv, {className: 'refugees', title: 'Refugee arrivals from Ukraine (total)', stat: shortenNumFormat(regionalData['#affected+refugees']), indicator: '#affected+refugees'});
   createFigure(refugeesDiv, {className: 'pin', title: 'People in Need (estimated as of 1 March)', stat: shortenNumFormat(data['#inneed+ind']), indicator: '#inneed+ind'});
   createFigure(refugeesDiv, {className: 'casualties-killed', title: 'Civilian Casualties - Killed', stat: data['#affected+killed'], indicator: '#affected+killed'});
   createFigure(refugeesDiv, {className: 'casualties-injured', title: 'Civilian Casualties - Injured', stat: data['#affected+injured'], indicator: '#affected+injured'});
@@ -4027,9 +4039,7 @@ var chartDateFormat = d3.utcFormat("%-m/%-d/%y");
 var colorRange = ['#f7fcb9', '#d9f0a3', '#addd8e', '#78c679', '#41ab5d'];
 var informColorRange = ['#FFE8DC','#FDCCB8','#FC8F6F','#F43C27','#961518'];
 var immunizationColorRange = ['#CCE5F9','#99CBF3','#66B0ED','#3396E7','#027CE1'];
-//var populationColorRange = ['#FFE281','#FDB96D','#FA9059','#F27253','#E9554D'];
 var populationColorRange = ['#f7fcb9', '#d9f0a3', '#addd8e', '#78c679', '#41ab5d', '#238443', '#005a32'];
-//#f7fcb9, #d9f0a3, #addd8e, #78c679, #41ab5d, #238443, #005a32
 var accessColorRange = ['#79B89A','#F6B98E','#C74B4F'];
 var oxfordColorRange = ['#ffffd9','#c7e9b4','#41b6c4','#225ea8','#172976'];
 var schoolClosureColorRange = ['#D8EEBF','#FFF5C2','#F6BDB9','#CCCCCC'];
