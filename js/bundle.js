@@ -2306,9 +2306,11 @@ function displayMap() {
       //   break;
       case 'adm0-label':
         globalLabelLayer = layer.id;
+        map.setLayoutProperty(globalLabelLayer, 'visibility', 'none');
         break;
       case 'adm0-centroids':
         globalMarkerLayer = layer.id;
+        map.setLayoutProperty(globalMarkerLayer, 'visibility', 'none');
         break;
       case 'adm1-fills':
         countryLayer = layer.id;
@@ -3151,7 +3153,6 @@ function initCountryLayer() {
     generateId: true 
   });
 
-
   //add refugee country labels
   map.addLayer({
     id: 'refugee-counts-labels',
@@ -3173,7 +3174,6 @@ function initCountryLayer() {
       'text-halo-blur': 1
     }
   });
-
 
   //add refugee dots
   map.addLayer({
