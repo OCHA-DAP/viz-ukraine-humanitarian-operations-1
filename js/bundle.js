@@ -2253,7 +2253,7 @@ function initMap() {
   console.log('Loading map...')
   map = new mapboxgl.Map({
     container: 'global-map',
-    style: 'mapbox://styles/humdata/cl0cqcpm4002014utgdbhcn4q',
+    style: 'mapbox://styles/humdata/cl0cqcpm4002014utgdbhcn4q/draft',
     center: [-25, 0],
     minZoom: 3,
     zoom: zoomLevel,
@@ -3384,7 +3384,10 @@ function updateCountryLayer() {
     if (d['#country+code']==currentCountry.code) {
       var val = +d[currentCountryIndicator.id];
       color = (val<0 || !isVal(val) || isNaN(val)) ? colorNoData : countryColorScale(val);
-      boundaryColor = (currentCountryIndicator.id=='#population') ? '#C4C4C4' : '#E0E0E0';
+
+      //turn off choropleth for population layer
+      color = (currentCountryIndicator.id=='#population') ? colorDefault : color;
+      
       layerOpacity = 1;
     }
     else {
@@ -4050,10 +4053,10 @@ var shortenNumFormat = d3.format('.2s');
 var percentFormat = d3.format('.1%');
 var dateFormat = d3.utcFormat("%b %d, %Y");
 var chartDateFormat = d3.utcFormat("%-m/%-d/%y");
-var colorRange = ['#f7fcb9', '#d9f0a3', '#addd8e', '#78c679', '#41ab5d'];
+var colorRange = ['#F7FCB9', '#D9F0A3', '#ADDD8E', '#78C679', '#41AB5D'];
 var informColorRange = ['#FFE8DC','#FDCCB8','#FC8F6F','#F43C27','#961518'];
 var immunizationColorRange = ['#CCE5F9','#99CBF3','#66B0ED','#3396E7','#027CE1'];
-var populationColorRange = ['#f7fcb9', '#d9f0a3', '#addd8e', '#78c679', '#41ab5d', '#238443', '#005a32'];
+var populationColorRange = ['#F7FCB9', '#D9F0A3', '#ADDD8E', '#78C679', '#41AB5D', '#238443', '#005A32'];
 var accessColorRange = ['#79B89A','#F6B98E','#C74B4F'];
 var oxfordColorRange = ['#ffffd9','#c7e9b4','#41b6c4','#225ea8','#172976'];
 var schoolClosureColorRange = ['#D8EEBF','#FFF5C2','#F6BDB9','#CCCCCC'];
