@@ -3116,7 +3116,7 @@ function initCountryLayer() {
         'icon-size': 0.6,
         'icon-allow-overlap': true
       }
-    }, globalLabelLayer);
+    });
   });
 
    //refugee count data
