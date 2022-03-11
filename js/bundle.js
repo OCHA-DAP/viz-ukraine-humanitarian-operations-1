@@ -3093,8 +3093,22 @@ function initCountryView() {
 
 function initCountryLayer() {
   //color scale
-  var clrRange = (currentCountryIndicator.id=='#population') ? populationColorRange : colorRange;
-  var countryColorScale = (currentCountryIndicator.id=='#population') ? d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(clrRange) : d3.scaleQuantize().domain([0, 1]).range(clrRange);
+  //var clrRange = (currentCountryIndicator.id=='#population') ? populationColorRange : colorRange;
+  //var countryColorScale = (currentCountryIndicator.id=='#population') ? d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(clrRange) : d3.scaleQuantize().domain([0, 1]).range(clrRange);
+  
+  switch(currentIndicator.id) {
+    case '#population':
+      countryColorScale = d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(populationColorRange);
+      break;
+    case '##loc+count+health':
+      countryColorScale = d3.scaleQuantize().domain([0, 1]).range(colorRange);
+      break;
+    case '#acled+events':
+      countryColorScale = d3.scaleOrdinal().domain(['Explosions/Remote violence', 'Battles', 'Protests', 'Violence against civilians', 'Strategic developments<', 'Riots']).range(eventColorRange);
+      break;
+    default:
+      countryColorScale = d3.scaleQuantize().domain([0, 1]).range(colorRange);
+  }
   createCountryLegend(countryColorScale);
 
 
@@ -3285,7 +3299,6 @@ function initCountryLayer() {
   });
 
 
-
   //mouse events
   map.on('mouseenter', countryLayer, function(e) {
     map.getCanvas().style.cursor = 'pointer';
@@ -3293,17 +3306,19 @@ function initCountryLayer() {
   });
 
   map.on('mousemove', countryLayer, function(e) {
-    var f = map.queryRenderedFeatures(e.point)[0];
-    if (f.properties.ADM0_PCODE!=undefined && f.properties.ADM0_EN==currentCountry.name) {
-      map.getCanvas().style.cursor = 'pointer';
-      createCountryMapTooltip(f.properties.ADM1_EN, f.properties.ADM1_PCODE);
-      tooltip
-        .addTo(map)
-        .setLngLat(e.lngLat);
-    }
-    else {
-      map.getCanvas().style.cursor = '';
-      tooltip.remove();
+    if (currentCountryIndicator.id!=='#acled+events') {    
+      var f = map.queryRenderedFeatures(e.point)[0];
+      if (f.properties.ADM0_PCODE!=undefined && f.properties.ADM0_EN==currentCountry.name) {
+        map.getCanvas().style.cursor = 'pointer';
+        createCountryMapTooltip(f.properties.ADM1_EN, f.properties.ADM1_PCODE);
+        tooltip
+          .addTo(map)
+          .setLngLat(e.lngLat);
+      }
+      else {
+        map.getCanvas().style.cursor = '';
+        tooltip.remove();
+      }
     }
   });
      
@@ -3338,7 +3353,7 @@ function initCountryLayer() {
   });
   map.on('mousemove', 'border-crossings-layer', function(e) {
     map.getCanvas().style.cursor = 'pointer';
-    const content = `Border Crossing:<h2>${e.features[0].properties['Name - English']}</h2></div>`;
+    const content = `Border Crossing:<h2>${e.features[0].properties['Name - English']}</h2>`;
     tooltip.setHTML(content);
     tooltip
       .addTo(map)
@@ -3349,12 +3364,137 @@ function initCountryLayer() {
     tooltip.remove();
   });
 
+  acledEvents();
+}
+
+function acledEvents() {
+  let acledEvents = new Set(acledData.map(d => d['#event+type']));
+
+  let events = [];
+  for (let e of acledData) {
+    events.push({
+      'type': 'Feature',
+      'properties': {
+        'adm1': e['#adm1+name'],
+        'adm3': e['#adm3+name'],
+        'event_type': e['#event+type'],
+        'date': e['#date+occurred'],
+        'fatalities': e['#affected+killed'],
+        'notes': e['#description'],
+        'sub_event_type': e['#event+type+sub'],
+        'actor1': e['#group+name+first'],
+        'actor2': e['#group+name+second']
+      },
+      'geometry': { 
+        'type': 'Point', 
+        'coordinates': [ Number(e['#geo+lon']), Number(e['#geo+lat']) ] 
+      } 
+    })
+  }
+  let eventsGeoJson = {
+    'type': 'FeatureCollection',
+    'features': events
+  };
+  map.addSource('acled', {
+    type: 'geojson',
+    data: eventsGeoJson,
+    generateId: true 
+  });
+
+  //add acled dots
+  // map.loadImage('assets/marker-events.png', (error, image) => {
+  //   if (error) throw error;
+  //   map.addImage('marker-event', image, { 'sdf': true });
+  //   map.addLayer({
+  //     id: 'acled-dots',
+  //     type: 'symbol',
+  //     source: 'acled',
+  //     layout: {
+  //       'icon-image': 'marker-event',
+  //       'icon-size': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 4, 1, 8, 1.5],
+  //       'icon-allow-overlap': true,
+  //       'icon-ignore-placement': true
+  //     },
+  //     paint: {
+  //       'icon-color': [
+  //         'match',
+  //           ['get', 'event_type'],
+  //           'Explosions/Remote violence',
+  //           '#A67037',
+  //           'Battles',
+  //           '#A0A445',
+  //           'Protests',
+  //           '#7CA544',
+  //           'Violence against civilians',
+  //           '#4FA59F',
+  //           'Strategic developments',
+  //           '#724CA4',
+  //           'Riots',
+  //           '#A49169',
+  //           '#666'
+  //       ],
+  //       'icon-opacity': 0.6
+  //     }
+  //   });
+  //   map.setLayoutProperty('acled-dots', 'visibility', 'none');
+  // });
+
+  map.addLayer({
+    id: 'acled-dots',
+    type: 'circle',
+    source: 'acled',
+    paint: {
+      'circle-color': [
+        'match',
+          ['get', 'event_type'],
+          'Battles',
+          '#A0A445',
+          'Explosions/Remote violence',
+          '#A67037',
+          'Protests',
+          '#7CA544',
+          'Riots',
+          '#A49169',
+          'Strategic developments',
+          '#724CA4',
+          'Violence against civilians',
+          '#4FA59F',
+          '#666'
+      ],
+      'circle-opacity': 0.6,
+      "circle-radius": 5
+    }
+  });
+  map.setLayoutProperty('acled-dots', 'visibility', 'none');
+
+
+  //acled events mouse events
+  map.on('mouseenter', 'acled-dots', function(e) {
+    map.getCanvas().style.cursor = 'pointer';
+    tooltip.addTo(map);
+  });
+  map.on('mousemove', 'acled-dots', function(e) {
+    map.getCanvas().style.cursor = 'pointer';
+    let prop = e.features[0].properties;
+    let date = new Date(prop.date);
+    let content = '<span class="small">' + moment(date).format('MMM D, YYYY') + '</span>';
+    content += '<h2>' + prop.event_type + '</h2>';
+    content += '<p>Fatalities: ' + prop.fatalities + '</p>';
+    content += '<p>' + prop.notes + '</p>';
+    tooltip.setHTML(content);
+    tooltip
+      .addTo(map)
+      .setLngLat(e.lngLat);
+  });
+  map.on('mouseleave', 'acled-dots', function() {
+    map.getCanvas().style.cursor = '';
+    tooltip.remove();
+  });
 }
 
 function updateCountryLayer() {
-  colorNoData = '#FFF';
-  if (currentCountryIndicator.id=='#affected+food+ipc+p3plus+num') currentCountryIndicator.id = getIPCDataSource();
-  $('.map-legend.country .legend-container').removeClass('no-data');
+  colorNoData = '#F9F9F9';
+  //$('.map-legend.country .legend-container').removeClass('no-data');
 
   //max
   var max = getCountryIndicatorMax();
@@ -3374,7 +3514,20 @@ function updateCountryLayer() {
       clrRange = colorRange;
   }
   var countryColorScale = d3.scaleQuantize().domain([0, max]).range(clrRange);
-
+  // var countryColorScale;
+  // switch(currentIndicator.id) {
+  //   case '#population':
+  //     countryColorScale = d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(populationColorRange);
+  //     break;
+  //   case '##loc+count+health':
+  //     countryColorScale = d3.scaleQuantize().domain([0, max]).range(colorRange);
+  //     break;
+  //   case '#acled+events':
+  //     countryColorScale = d3.scaleOrdinal().domain(['Explosions/Remote violence', 'Battles', 'Protests', 'Violence against civilians', 'Strategic developments<', 'Riots']).range(eventColorRange);
+  //     break;
+  //   default:
+  //     countryColorScale = d3.scaleQuantize().domain([0, 1]).range(colorRange);
+  // }
 
   //data join
   var expression = ['match', ['get', 'ADM1_PCODE']];
@@ -3425,18 +3578,52 @@ function updateCountryLayer() {
   map.setPaintProperty(countryLabelLayer, 'text-opacity', expressionOpacity);
 
   //hide color scale if no data
-  if (max!=undefined && max>0) {
-    if (currentCountryIndicator.id=='#population') {
-      $('.map-legend.country .legend-container').addClass('population');
-      countryColorScale = d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(clrRange)
-    }
-    else {
-      $('.map-legend.country .legend-container').removeClass('population');
-    }
-    updateCountryLegend(countryColorScale);
+
+  $('.map-legend.country').removeClass('population');
+  $('.map-legend.country').removeClass('acled');
+  if (currentCountryIndicator.id=='#population') {
+    $('.map-legend.country').addClass('population');
+    countryColorScale = d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(populationColorRange);
+  }
+  else if (currentCountryIndicator.id=='#acled+events') {
+    $('.map-legend.country').addClass('acled');
+    countryColorScale = d3.scaleOrdinal()
+      .domain(['Battles', 'Explosions/Remote violence', 'Protests', 'Riots', 'Strategic developments', 'Violence against civilians'])
+      .range(eventColorRange);
+  }
+  else {}
+  updateCountryLegend(countryColorScale);
+  // if (max!=undefined && max>0) {
+  //   if (currentCountryIndicator.id=='#population') {
+  //     $('.map-legend.country .legend-container').addClass('population');
+  //     countryColorScale = d3.scaleOrdinal().domain(['<1', '1-2', '2-5', '5-10', '10-25', '25-50', '>50']).range(populationColorRange);
+  //   }
+  //   else if (currentCountryIndicator.id=='#acled+events') {
+  //     countryColorScale = d3.scaleOrdinal().domain(['Explosions/Remote violence', 'Battles', 'Protests', 'Violence against civilians', 'Strategic developments<', 'Riots']).range(eventColorRange);
+  //   }
+  //   else {
+
+  //   }
+  //   updateCountryLegend(countryColorScale);
+  // }
+  // else {
+  //   //$('.map-legend.country .legend-container').addClass('no-data');
+  //   updateCountryLegend(countryColorScale);
+  // }
+
+
+  //toggle layers
+  if (currentCountryIndicator.id=='#acled+events') {
+    map.setLayoutProperty('acled-dots', 'visibility', 'visible');
+    map.setLayoutProperty('border-crossings-layer', 'visibility', 'none');
+    map.setLayoutProperty('hostilities-layer', 'visibility', 'none');
   }
   else {
-    $('.map-legend.country .legend-container').addClass('no-data');
+    if (map.getLayer('hostilities-layer') && map.getLayer('border-crossings-layer')) {  
+      map.setLayoutProperty('acled-dots', 'visibility', 'none');
+      map.setLayoutProperty('border-crossings-layer', 'visibility', 'visible');
+      map.setLayoutProperty('hostilities-layer', 'visibility', 'visible');
+    }
   }
 }
 
@@ -3465,15 +3652,16 @@ function createCountryLegend(scale) {
   createSource($('.map-legend.country .border-crossing-source'), '#geojson');
   createSource($('.map-legend.country .health-facilities-source'), '#loc+count+health');
 
-  let title = (currentCountryIndicator.id=='#population') ? 'Population Density (people per sq km)' : 'Number of Health Facilities';
-  $('.legend-title').html(title);
+  //let title = (currentCountryIndicator.id=='#population') ? 'Population Density (people per sq km)' : 'Number of Health Facilities';
+  //$('.legend-title').html(title);
+
 
   var legend = d3.legendColor()
     .labelFormat(percentFormat)
     .cells(colorRange.length)
     .scale(scale);
 
-  var div = d3.select('.map-legend.country .legend-scale  ');
+  var div = d3.select('.map-legend.country .legend-scale');
   var svg = div.append('svg')
     .attr('class', 'legend-container');
 
@@ -3504,24 +3692,57 @@ function createCountryLegend(scale) {
 
 function updateCountryLegend(scale) {
   var legendFormat, legendTitle;
-  if (currentCountryIndicator.id=='#population') {
-    legendFormat = shortenNumFormat;
-    legendTitle = 'Population Density (people per sq km)';
+  switch(currentCountryIndicator.id) {
+    case '#population':
+      legendTitle = 'Population Density (people per sq km)';
+      legendFormat = shortenNumFormat;
+      break;
+    case '#loc+count+health':
+      legendTitle = 'Number of Health Facilities';
+      legendFormat = d3.format('.0f');
+      break;
+    case '#acled+events':
+      legendTitle = 'Conflict Event Type';
+      legendFormat = d3.format('.0f');
+      break;
+    default:
+      tilegendTitletle = '';
+      legendFormat = d3.format('.0f');
   }
-  else {
-    legendFormat = d3.format('.0f');
-    legendTitle = 'Number of Health Facilities';
-  }
-
   $('.map-legend.country .legend-title').html(legendTitle);
 
-  var legend = d3.legendColor()
-    .labelFormat(legendFormat)
-    .cells(colorRange.length)
-    .scale(scale);
+  // var legend = d3.legendColor()
+  //   .labelFormat(legendFormat)
+  //   .cells(colorRange.length)
+  //   .scale(scale);
 
-  var g = d3.select('.map-legend.country .scale');
-  g.call(legend);
+  // var g = d3.select('.map-legend.country .scale');
+  // g.call(legend);
+  if (currentCountryIndicator.id=='#acled+events') {
+    if (d3.selectAll('.legendCells-events').empty()) {
+      var svg = d3.select('.map-legend.country .scale');
+      svg.append("g")
+        .attr("class", "legendCells-events")
+        .attr("transform", "translate(6,10)");
+
+      var legendOrdinal = d3.legendColor()
+        .shape("path", d3.symbol().type(d3.symbolCircle).size(90)())
+        .shapePadding(3)
+        .scale(scale);
+
+      svg.select(".legendCells-events")
+        .call(legendOrdinal);
+    }
+  }
+  else {
+    var legend = d3.legendColor()
+      .labelFormat(legendFormat)
+      .cells(colorRange.length)
+      .scale(scale);
+
+    var g = d3.select('.map-legend.country .scale');
+    g.call(legend);
+  }
 }
 
 
@@ -4061,6 +4282,7 @@ var populationColorRange = ['#F7FCB9', '#D9F0A3', '#ADDD8E', '#78C679', '#41AB5D
 var accessColorRange = ['#79B89A','#F6B98E','#C74B4F'];
 var oxfordColorRange = ['#ffffd9','#c7e9b4','#41b6c4','#225ea8','#172976'];
 var schoolClosureColorRange = ['#D8EEBF','#FFF5C2','#F6BDB9','#CCCCCC'];
+var eventColorRange = ['#A0A445','#A67037','#7CA544','#A49169','#724CA4','#4FA59F'];
 var colorDefault = '#F2F2EF';
 var colorNoData = '#FFF';
 var regionBoundaryData, regionalData, worldData, nationalData, subnationalData, subnationalDataByCountry, immunizationData, timeseriesData, covidTrendData, dataByCountry, countriesByRegion, colorScale, viewportWidth, viewportHeight, currentRegion = '';
@@ -4077,7 +4299,7 @@ var currentIndicator = {};
 var currentCountryIndicator = {};
 var currentCountry = {};
 
-var refugeeTimeseriesData, refugeeCountData, borderCrossingData = '';
+var refugeeTimeseriesData, refugeeCountData, borderCrossingData, acledData = '';
 
 $( document ).ready(function() {
   var prod = (window.location.href.indexOf('ocha-dap')>-1 || window.location.href.indexOf('data.humdata.org')>-1) ? true : false;
@@ -4139,6 +4361,7 @@ $( document ).ready(function() {
       nationalData = allData.national_data;
       subnationalData = allData.subnational_data;
       refugeeTimeseriesData = allData.refugees_series_data;
+      acledData = allData.fatalities_data;
       sourcesData = allData.sources_data;
 
       borderCrossingData = data[1];
