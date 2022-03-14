@@ -2213,39 +2213,6 @@ function createKeyFigure(target, title, className, value) {
 }
 
 
-/************************/
-/*** SOURCE FUNCTIONS ***/
-/************************/
-function createSource(div, indicator) {
-  var sourceObj = getSource(indicator);
-  var date = (sourceObj['#date']==undefined) ? '' : dateFormat(new Date(sourceObj['#date']));
-  var sourceName = (sourceObj['#meta+source']==undefined) ? '' : sourceObj['#meta+source'];
-  var sourceURL = (sourceObj['#meta+url']==undefined) ? '#' : sourceObj['#meta+url'];
-  div.append('<p class="small source"><span class="date">'+ date +'</span> | <span class="source-name">'+ sourceName +'</span> | <a href="'+ sourceURL +'" class="dataURL" target="_blank" rel="noopener">DATA</a></p>');
-}
-
-function updateSource(div, indicator) {
-  var sourceObj = getSource(indicator);
-  var date = (sourceObj['#date']==undefined) ? '' : dateFormat(new Date(sourceObj['#date']));
-  var sourceName = (sourceObj['#meta+source']==undefined) ? '' : sourceObj['#meta+source'];
-  var sourceURL = (sourceObj['#meta+url']==undefined) ? '#' : sourceObj['#meta+url'];
-  div.find('.date').text(date);
-  div.find('.source-name').text(sourceName);
-  div.find('.dataURL').attr('href', sourceURL);
-}
-
-function getSource(indicator) {
-  var isGlobal = ($('.content').hasClass('country-view')) ? false : true;
-  var obj = {};
-  sourcesData.forEach(function(item) {
-    if (item['#indicator+name']==indicator) {
-      obj = item;
-    }
-  });
-  return obj;
-}
-
-
 var map, mapFeatures, globalLayer, globalLabelLayer, globalMarkerLayer, countryLayer, countryBoundaryLayer, countryLabelLayer, countryMarkerLayer, tooltip, markerScale, countryMarkerScale;
 var adm0SourceLayer = 'polbnda_int_uncs-6zgtye';
 var hoveredStateId = null;
@@ -3763,9 +3730,12 @@ function getCountryIndicatorMax() {
 
 function createCountryLegend(scale) {
   createSource($('.map-legend.country .population-source'), '#population');
+  createSource($('.map-legend.country .idp-source'), '#affected+idps');
+  createSource($('.map-legend.country .acled-source'), '#date+latest+acled');
   createSource($('.map-legend.country .refugee-arrivals-source'), '#affected+refugees');
   createSource($('.map-legend.country .border-crossing-source'), '#geojson');
   createSource($('.map-legend.country .health-facilities-source'), '#loc+count+health');
+  
 
   //let title = (currentCountryIndicator.id=='#population') ? 'Population Density (people per sq km)' : 'Number of Health Facilities';
   //$('.legend-title').html(title);
@@ -4389,6 +4359,46 @@ function createFigure(div, obj) {
     createSource(divInner, obj.indicator);
 }
 
+
+/************************/
+/*** SOURCE FUNCTIONS ***/
+/************************/
+function createSource(div, indicator) {
+  var sourceObj = getSource(indicator);
+  var date = (sourceObj['#date']==undefined) ? '' : dateFormat(new Date(sourceObj['#date']));
+
+  //format date for acled source
+  if (indicator=='#date+latest+acled') {
+    sourceObj['#date+start'] = getSource('#date+start+conflict')['#date'];
+    let startDate = new Date(sourceObj['#date+start']);
+    date = `${d3.utcFormat("%b %d")(startDate)} - ${date}`;
+  }
+
+  var sourceName = (sourceObj['#meta+source']==undefined) ? '' : sourceObj['#meta+source'];
+  var sourceURL = (sourceObj['#meta+url']==undefined) ? '#' : sourceObj['#meta+url'];
+  div.append('<p class="small source"><span class="date">'+ date +'</span> | <span class="source-name">'+ sourceName +'</span> | <a href="'+ sourceURL +'" class="dataURL" target="_blank" rel="noopener">DATA</a></p>');
+}
+
+function updateSource(div, indicator) {
+  var sourceObj = getSource(indicator);
+  var date = (sourceObj['#date']==undefined) ? '' : dateFormat(new Date(sourceObj['#date']));
+  var sourceName = (sourceObj['#meta+source']==undefined) ? '' : sourceObj['#meta+source'];
+  var sourceURL = (sourceObj['#meta+url']==undefined) ? '#' : sourceObj['#meta+url'];
+  div.find('.date').text(date);
+  div.find('.source-name').text(sourceName);
+  div.find('.dataURL').attr('href', sourceURL);
+}
+
+function getSource(indicator) {
+  var isGlobal = ($('.content').hasClass('country-view')) ? false : true;
+  var obj = {};
+  sourcesData.forEach(function(item) {
+    if (item['#indicator+name']==indicator) {
+      obj = item;
+    }
+  });
+  return obj;
+}
 var numFormat = d3.format(',');
 var shortenNumFormat = d3.format('.2s');
 var percentFormat = d3.format('.1%');
