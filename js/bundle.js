@@ -3497,7 +3497,7 @@ function initAcledEvents() {
 
 let idpDotScale;
 function initIDPLayer() {
-  let maxCount = d3.max(idpData, function(d) { console.log(d); return +d.value.count; });
+  let maxCount = d3.max(idpData, function(d) { return +d.value.count; });
   idpDotScale = d3.scaleSqrt()
     .domain([1, maxCount])
     .range([5, 25]);
@@ -4499,8 +4499,6 @@ $( document ).ready(function() {
           }
         })
         .entries(idp);
-
-      console.log(idpData)
             
       //format data
       subnationalData.forEach(function(item) {
