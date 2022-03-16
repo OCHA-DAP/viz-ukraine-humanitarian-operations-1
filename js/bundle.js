@@ -419,7 +419,7 @@ function selectCountry(features) {
   var target = bbox.default(turfHelpers.featureCollection(features));
   map.fitBounds(regionBoundaryData[0].bbox, {
     offset: [ 0, -25],
-    padding: {right: $('.map-legend.country').outerWidth()+65, bottom: 50, left: ($('.country-panel').outerWidth())-80},
+    padding: {right: $('.map-legend.country').outerWidth()+50, bottom: 50, left: ($('.country-panel').outerWidth())-80},
     linear: true
   });
 
