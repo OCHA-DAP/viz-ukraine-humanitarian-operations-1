@@ -1123,10 +1123,32 @@ function createCountryMapTooltip(adm1_name, adm1_pcode, point) {
     else {
       val = 'No Data';
     }
-    let content = `<h2>${adm1_name} Oblast</h2>${label}:<div class="stat">${val}</div>`;
-    tooltip.setHTML(content);
 
-    if (!isMobile) setTooltipPosition(point)
+    let content = '';
+    if (val!='No Data' && currentCountryIndicator.id=='#org+count+num') {
+      //humanitarian presence layer
+      let sectors = adm1[0]['#sector+cluster+names'].split(',').sort();
+      let filteredSectors = [];
+      sectors.forEach(function(sector, i) {
+        if (sector=='Protection: Protection') sector = 'Protection';
+        if (!sector.includes('Protection: ')) filteredSectors.push(sector)
+      });
+      content = `<h2>${adm1_name} Oblast</h2>`;
+      content += `<div class="table-display layer-orgs">`;
+      content += `<div class="table-row"><div>People reached:</div><div>${numFormat(adm1[0]['#reached+ind'])}</div></div>`;
+      content += `<div class="table-row"><div>${label}:</div><div>${val}</div></div>`;
+      content += `<div class="table-row row-separator"><div>Clusters present:</div><div>${filteredSectors.length}</div></div>`;
+      filteredSectors.forEach(function(sector, index) {
+        content += `<div class="table-row breakdown"><div><i class="${humIcons[sector]}"></i> ${sector}</div></div>`;
+      });
+      content += `</div>`;
+    }
+    else {
+      content = `<h2>${adm1_name} Oblast</h2>${label}:<div class="stat">${val}</div>`;
+    }
+
+    tooltip.setHTML(content);
+    //if (!isMobile) setTooltipPosition(point)
   }
 }
 
@@ -1188,6 +1210,8 @@ function initCountryPanel() {
   createFigure(refugeesDiv, {className: 'idps', title: 'Internally Displaced People (estimated)', stat: shortenNumFormat(data['#affected+idps']), indicator: '#affected+idps'});
   createFigure(refugeesDiv, {className: 'casualties-killed', title: 'Civilian Casualties - Killed', stat: numFormat(data['#affected+killed']), indicator: '#affected+killed'});
   createFigure(refugeesDiv, {className: 'casualties-injured', title: 'Civilian Casualties - Injured', stat: numFormat(data['#affected+injured']), indicator: '#affected+injured'});
+  createFigure(refugeesDiv, {className: 'people-reached', title: 'People reached within Ukraine (total)', stat: numFormat(data['#reached+ind']), indicator: '#reached+ind'});
+  createFigure(refugeesDiv, {className: 'orgs', title: 'Humanitarian orgs present within Ukraine (total)', stat: numFormat(data['#org+count+num']), indicator: '#org+count+num'});
   createFigure(refugeesDiv, {className: 'attacks-health', title: 'Attacks on Health Care', stat: numFormat(data['#indicator+attacks+healthcare+num']), indicator: '#indicator+attacks+healthcare+num'});
   createFigure(refugeesDiv, {className: 'attacks-education', title: 'Attacks on Education Facilities', stat: numFormat(data['#indicator+attacks+education+num']), indicator: '#indicator+attacks+education+num'});
 
@@ -1284,7 +1308,7 @@ var globalCountryList = [];
 var currentCountryIndicator = {};
 var currentCountry = {};
 
-var refugeeTimeseriesData, refugeeCountData, borderCrossingData, acledData, locationData, hostilityData, refugeeLineData, cleanedCoords, idpGeoJson = '';
+var refugeeTimeseriesData, refugeeCountData, borderCrossingData, acledData, locationData, hostilityData, refugeeLineData, cleanedCoords, idpGeoJson, humIcons = '';
 
 $( document ).ready(function() {
   var prod = (window.location.href.indexOf('ocha-dap')>-1 || window.location.href.indexOf('data.humdata.org')>-1) ? true : false;
@@ -1414,10 +1438,26 @@ $( document ).ready(function() {
         });
       });
 
+
       //group national data by country -- drives country panel    
       dataByCountry = d3.nest()
         .key(function(d) { return d['#country+code']; })
         .object(nationalData);
+
+
+      //map humanitarian icons to sector clusters
+      humIcons = {
+        'Coordination and Common Services': 'humanitarianicons-Coordination',
+        'Education': 'humanitarianicons-Education',
+        'Emergency Telecommunications': 'humanitarianicons-Emergency-Telecommunications',
+        'Food Security and Livelihoods': 'humanitarianicons-Food-Security',
+        'Health': 'humanitarianicons-Health',
+        'Multi-purpose Cash': 'humanitarianicons-Fund',
+        'Nutrition': 'fa-solid fa-person-breastfeeding',
+        'Protection': 'humanitarianicons-Protection',
+        'Shelter/NFI': 'humanitarianicons-Shelter',
+        'WASH': 'humanitarianicons-Water-Sanitation-and-Hygiene',
+      };
 
 
       dataLoaded = true;
