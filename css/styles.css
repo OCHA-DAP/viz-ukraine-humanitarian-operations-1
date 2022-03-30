@@ -1235,7 +1235,7 @@ label.label-small {
       padding-right: 20px; }
     .table-display .table-row.row-separator {
       border-bottom: 1px solid #CCC;
-      padding: 2px 0 8px; }
+      padding-bottom: 8px; }
       .table-display .table-row.row-separator:first-child {
         border-top: 1px solid #CCC; }
   .table-display.layer-orgs .table-row > div:first-child {
