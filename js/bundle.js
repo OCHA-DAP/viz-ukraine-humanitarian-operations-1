@@ -1199,15 +1199,6 @@ function initCountryPanel() {
   //humanitarian impact key figures
   var refugeesDiv = $('.country-panel .refugees .panel-inner');
   createFigure(refugeesDiv, {className: 'refugees', title: 'Refugee Arrivals from Ukraine (total)', stat: shortenNumFormat(regionalData['#affected+refugees']), indicator: '#affected+refugees'});
-  
-  //refugee trendline
-  var sparklineArray = [];
-  refugeeTimeseriesData.forEach(function(d) {
-    var obj = {date: d['#affected+date+refugees'], value: d['#affected+refugees']};
-    sparklineArray.push(obj);
-  });
-  createSparkline(sparklineArray, '.figure.refugees .stat');
-
   createFigure(refugeesDiv, {className: 'idps', title: 'Internally Displaced People (estimated)', stat: shortenNumFormat(data['#affected+idps']), indicator: '#affected+idps'});
   createFigure(refugeesDiv, {className: 'casualties-killed', title: 'Civilian Casualties - Killed', stat: numFormat(data['#affected+killed']), indicator: '#affected+killed'});
   createFigure(refugeesDiv, {className: 'casualties-injured', title: 'Civilian Casualties - Injured', stat: numFormat(data['#affected+injured']), indicator: '#affected+injured'});
@@ -1215,6 +1206,28 @@ function initCountryPanel() {
   createFigure(refugeesDiv, {className: 'orgs', title: 'Humanitarian orgs present within Ukraine (total)', stat: numFormat(data['#org+count+num']), indicator: '#org+count+num'});
   createFigure(refugeesDiv, {className: 'attacks-health', title: 'Attacks on Health Care', stat: numFormat(data['#indicator+attacks+healthcare+num']), indicator: '#indicator+attacks+healthcare+num'});
   createFigure(refugeesDiv, {className: 'attacks-education', title: 'Attacks on Education Facilities', stat: numFormat(data['#indicator+attacks+education+num']), indicator: '#indicator+attacks+education+num'});
+
+  //refugee sparkline
+  var sparklineArray = [];
+  refugeeTimeseriesData.forEach(function(d) {
+    var obj = {date: d['#affected+date+refugees'], value: d['#affected+refugees']};
+    sparklineArray.push(obj);
+  });
+  createSparkline(sparklineArray, '.figure.refugees .stat');
+
+  //casualty sparklines
+  let killedArray = [];
+  let injuredArray = [];
+  casualtiesTimeseriesData.forEach(function(d) {
+    let killedObj = {date: d['#date'], value: d['#affected+killed']};
+    killedArray.push(killedObj);
+
+    let injuredObj = {date: d['#date'], value: d['#affected+injured']};
+    injuredArray.push(injuredObj);
+  });
+  createSparkline(killedArray, '.figure.casualties-killed .stat');
+  createSparkline(injuredArray, '.figure.casualties-injured .stat');
+
 
   //funding
   var fundingDiv = $('.country-panel .funding .panel-inner');
@@ -1309,7 +1322,7 @@ var globalCountryList = [];
 var currentCountryIndicator = {};
 var currentCountry = {};
 
-var refugeeTimeseriesData, refugeeCountData, borderCrossingData, acledData, locationData, hostilityData, refugeeLineData, cleanedCoords, idpGeoJson, humIcons = '';
+var refugeeTimeseriesData, refugeeCountData, casualtiesTimeseriesData, borderCrossingData, acledData, locationData, hostilityData, refugeeLineData, cleanedCoords, idpGeoJson, humIcons = '';
 
 $( document ).ready(function() {
   var prod = (window.location.href.indexOf('ocha-dap')>-1 || window.location.href.indexOf('data.humdata.org')>-1) ? true : false;
@@ -1378,6 +1391,7 @@ $( document ).ready(function() {
       acledData = allData.fatalities_data;
       sourcesData = allData.sources_data;
       idpMacroData = allData.idps_macro_data;
+      casualtiesTimeseriesData = allData.timeseries_casualties_data;
 
       borderCrossingData = data[1];
       regionBoundaryData = data[2].features;
