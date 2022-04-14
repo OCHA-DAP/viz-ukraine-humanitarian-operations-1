@@ -1207,7 +1207,7 @@ label.label-small {
   font-size: 9px;
   letter-spacing: 0.01em;
   line-height: 16px;
-  margin-right: 5px;
+  margin-left: 5px;
   padding: 3px 5px;
   margin-bottom: 3px; }
 
@@ -1306,9 +1306,6 @@ a:visited {
     right: 24px;
     opacity: 1;
     z-index: 3; }
-  .content.country-view .country-panel {
-    left: 0;
-    transition: left 0.4s ease-out; }
   .content.country-view .country-select {
     top: 30px; }
 
@@ -1535,7 +1532,7 @@ a:visited {
         margin-left: 30px; }
 
 .mapboxgl-ctrl-top-right {
-  top: 16px;
+  top: 60px;
   right: 16px; }
 
 .mapboxgl-ctrl-bottom-left {
@@ -1543,12 +1540,13 @@ a:visited {
 
 .country-panel {
   background-color: #FFF;
+  box-shadow: 2px 2px 4px rgba(208, 208, 208, 0.5);
   bottom: 0;
   overflow: hidden;
   padding: 20px 30px 30px;
   position: absolute;
   top: 0;
-  left: -416px;
+  left: 0;
   width: 416px;
   z-index: 3;
   transition: left 0.3s ease-in; }
@@ -1599,6 +1597,70 @@ a:visited {
   .refugees-timeseries .source {
     padding-left: 20px; }
 
+.tab-menubar {
+  background-color: #FFF;
+  border-bottom: 3px solid #EEE;
+  display: flex;
+  flex-flow: row;
+  height: 50px;
+  left: 416px;
+  opacity: 1;
+  padding: 0 30px;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1; }
+  .tab-menubar .tab-button {
+    border-bottom: 3px solid #EEE;
+    color: #787878;
+    cursor: pointer;
+    font-family: 'Gotham-Bold', sans-serif;
+    font-size: 14px;
+    height: 50px;
+    padding: 14px 32px 0; }
+    .tab-menubar .tab-button.active, .tab-menubar .tab-button:hover {
+      border-color: #F05449;
+      color: #F05449; }
+
+#chart-view {
+  background-color: #FFF;
+  display: none;
+  left: 0;
+  overflow: auto;
+  padding: 15px 30px 15px 446px;
+  position: absolute;
+  top: 50px;
+  width: 100%;
+  z-index: 3; }
+  #chart-view .source-container {
+    margin-bottom: 20px; }
+    #chart-view .source-container .source {
+      margin-left: 0; }
+  #chart-view .trendseries-title {
+    border-top: 1px solid #CCC;
+    margin-top: 30px; }
+    #chart-view .trendseries-title h6 {
+      margin-top: 25px; }
+    #chart-view .trendseries-title .num {
+      color: #000;
+      font-family: 'Gotham-Light', sans-serif;
+      font-size: 42px;
+      line-height: 40px;
+      padding: 10px 0 3px; }
+  #chart-view .c3-bar._expanded_ {
+    fill: #F2645B !important;
+    fill-opacity: 1 !important; }
+
+.trendseries-select {
+  background-color: #FFF;
+  border-color: #FFF;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  font: 700 16px 'Source Sans Pro', sans-serif;
+  height: 48px;
+  padding: 0 20px;
+  width: auto; }
+
 .c3-title,
 .chart-title {
   fill: #000;
@@ -1626,8 +1688,6 @@ a:visited {
   .c3-tooltip th {
     font-weight: normal;
     padding-left: 6px; }
-  .c3-tooltip td > span {
-    display: none; }
 
 .sparkline {
   fill: none;
@@ -1635,22 +1695,47 @@ a:visited {
   stroke: #007CE1;
   stroke-width: 1px; }
 
-.country-timeseries-chart .c3-target.c3-focused .c3-lines .c3-line {
-  stroke: #007CE1 !important; }
+.trendseries-chart .c3-line {
+  stroke-width: 2; }
 
-.country-timeseries-chart .c3-grid line {
+.trendseries-chart .c3-grid line {
   stroke: #F2F2F3;
   stroke-dasharray: 0; }
 
-.country-timeseries-chart .c3-axis .tick line,
-.country-timeseries-chart .c3-axis-y path.domain {
+.trendseries-chart .c3-axis .tick line,
+.trendseries-chart .c3-axis-y path.domain {
   display: none; }
 
-.country-timeseries-chart .c3-axis-x path.domain {
+.trendseries-chart .c3-axis-x path.domain {
   stroke: #888; }
 
-.country-timeseries-chart .c3-axis text {
+.trendseries-chart .c3-axis text {
   fill: #888; }
+
+.trendseries-chart table {
+  background-color: #FFF;
+  border: 1px solid #E2E2E2;
+  border-collapse: collapse;
+  border-spacing: 0; }
+  .trendseries-chart table th {
+    background-color: #B3B3B3;
+    border: 1px solid #B3B3B3;
+    color: #FFF;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    padding: 6px 6px; }
+  .trendseries-chart table td {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 13px;
+    font-weight: normal !important;
+    padding: 4px 7px; }
+    .trendseries-chart table td:last-child {
+      border-left: 1px solid #E2E2E2;
+      text-align: right; }
+  .trendseries-chart table tr:last-child {
+    border-top: 1px solid #E2E2E2; }
 
 .mobile-message {
   background-color: rgba(0, 0, 0, 0.5);
@@ -1689,14 +1774,28 @@ a:visited {
     margin: 15px 0;
     padding: 0 20px; }
   .mapboxgl-ctrl-top-right {
-    top: 0;
+    top: 50px;
     right: 0; }
   .content {
     width: 100% !important; }
+  .tab-menubar {
+    left: 0;
+    top: 50%; }
   #global-map {
     height: 50%;
     position: absolute;
     top: 50%; }
+  #chart-view {
+    height: 50%;
+    margin-top: 50px;
+    padding: 15px 20px;
+    position: absolute;
+    top: 50%; }
+    #chart-view .trendseries-title h6 {
+      font-size: 12px; }
+    #chart-view .trendseries-title .num {
+      font-size: 24px;
+      padding: 0; }
   .content.country-view .map-legend.country {
     max-height: 39% !important;
     bottom: 10px;
@@ -1708,7 +1807,6 @@ a:visited {
     font-size: 10px;
     line-height: 14px; }
   .country-panel {
-    box-shadow: 0px 15px 15px -16px #999;
     height: 50%;
     overflow-y: scroll;
     padding: 10px 0 0;

@@ -42,23 +42,51 @@ function createSparkline(data, div, size) {
 /*** TIMESERIES CHART FUNCTIONS ***/
 /****************************************/
 function initTimeseries(data, div) {
-  createTimeSeries(refugeeTimeseriesData, div);
+  let formattedData = formatData(data);
+  $('.trendseries-title').html('<h6>Total Number of Conflict Events</h6><div class="num">'+numFormat(data.length)+'</div>');
+  createTimeSeries(formattedData, div);
 }
 
-function createTimeSeries(array, div) {
-  var chartWidth = 336;
-  var chartHeight = (isMobile) ? 180 : 240;
-  var colorArray = ['#999'];
+let eventsArray;
+function formatData(data) {
+  let events = d3.nest()
+    .key(function(d) { return d['#event+type']; })
+    .key(function(d) { return d['#date+occurred']; })
+    .rollup(function(leaves) { return leaves.length; })
+    .entries(data);
+  events.sort((a, b) => (a.key > b.key) ? 1 : -1);
 
-  let dateArr = ['x'];
-  let refugeeArr = ['Ukraine'];
-    for (let val of array) {
-    let d = moment(val['#affected+date+refugees'], ['YYYY-MM-DD']);
-    let date = new Date(d.year(), d.month(), d.date());
-    dateArr.push(date);
-    refugeeArr.push(val['#affected+refugees']);
-  }
-  let data = [dateArr, refugeeArr];
+  let dates = [... new Set(acledData.map((d) => d['#date+occurred']))];
+  let totals = [];
+
+  eventsArray = [];
+  events.forEach(function(event) {
+    let array = [];
+    dates.forEach(function(date, index) {
+      let val = 0;
+      event.values.forEach(function(e) {
+        if (e.key==date)
+          val = e.value;
+      });
+      totals[index] = (totals[index]==undefined) ? val : totals[index]+val; //save aggregate of all events per day
+      array.push(val); //save each event per day
+    });
+    array.reverse();
+    array.unshift(event.key);
+    eventsArray.push(array);
+  });
+
+  //format for c3
+  dates.unshift('x');
+  totals.unshift('All');
+  return {series: [dates, totals], events: eventsArray};
+}
+
+
+function createTimeSeries(data, div) {
+  const chartWidth = viewportWidth - $('.country-panel').width() - 100;
+  const chartHeight = 280;
+  let colorArray = ['#F8B1AD'];
 
   var chart = c3.generate({
     size: {
@@ -66,28 +94,24 @@ function createTimeSeries(array, div) {
       height: chartHeight
     },
     padding: {
-      bottom: 0,
+      bottom: (isMobile) ? 60 : 0,
       top: 10,
-      left: 35,
-      right: 30
+      left: (isMobile) ? 30 : 35,
+      right: (isMobile) ? 140 : 200
     },
     bindto: div,
-    title: {
-      text: 'Refugee Arrivals from Ukraine Over Time',
-      position: 'upper-left',
-    },
     data: {
       x: 'x',
-      columns: data,
-      type: 'spline'
+      columns: data.series,
+      type: 'bar'
+    },
+    bar: {
+        width: {
+            ratio: 0.5
+        }
     },
     color: {
       pattern: colorArray
-    },
-    spline: {
-      interpolation: {
-        type: 'basis'
-      }
     },
     point: { show: false },
     grid: {
@@ -104,44 +128,64 @@ function createTimeSeries(array, div) {
       },
       y: {
         min: 0,
-        padding: { top: 0, bottom: 0 },
+        padding: { 
+          top: (isMobile) ? 20 : 50, 
+          bottom: 0 
+        },
         tick: { 
           outer: false,
-          format: shortenNumFormat
+          //format: d3.format('d')
+          format: function(d) {
+            if (Math.floor(d) != d){
+              return;
+            }
+            return d;
+          }
         }
       }
     },
     legend: {
       show: false
     },
-    transition: { duration: 300 },
+    transition: { duration: 500 },
     tooltip: {
-      grouped: false,
-      format: {
-        title: function (d) { 
-          let date = new Date(d);
-          return moment(d).format('M/D/YY');
-        },
-        value: function (value, ratio, id) {
-          return numFormat(value);
-        }
+      contents: function (d, defaultTitleFormat, defaultValueFormat, color) {
+        let events = eventsArray;
+        let id = d[0].index + 1;
+        let date = new Date(d[0].x);
+        let total = 0;
+        let html = `<table><thead><tr><th colspan="2">${moment(date).format('MMM D, YYYY')}</th></tr><thead>`;
+        for (var i=0; i<=events.length-1; i++) {
+          if (events[i][id]>0) {
+            html += `<tr><td>${events[i][0]}</td><td>${events[i][id]}</td></tr>`;
+            total += events[i][id];
+          }
+        };
+        html += `<tr><td><b>Total</b></td><td><b>${total}</b></td></tr></table>`;
+        return html;
       }
     }
   });
 
   countryTimeseriesChart = chart;
-  createSource($('.refugees-timeseries'), '#affected+refugees');
+  createSource($('#chart-view .source-container'), '#date+latest+acled');
 }
 
 
 function updateTimeseries(selected) {
-  var maxValue = d3.max(countryTimeseriesChart.data(selected)[0].values, function(d) { return +d.value; });
+  let filteredData = (selected!='All') ? acledData.filter((d) => d['#adm1+code'] == selected) : acledData;
+  let data = formatData(filteredData);
+  eventsArray = data.events;
+  $('.trendseries-title').find('.num').html(numFormat(filteredData.length));
 
-  countryTimeseriesChart.axis.max(maxValue*1.6);
-  countryTimeseriesChart.focus(selected);
-  $('.country-timeseries-chart .c3-chart-lines .c3-line').css('stroke', '#999');
-  $('.country-timeseries-chart .c3-chart-lines .c3-line-'+selected).css('stroke', '#007CE1');
-  $('.refugees-timeseries').show();
+  if (filteredData.length<=0)
+    $('.trendseries-chart').hide();
+  else 
+    $('.trendseries-chart').show();
+
+  countryTimeseriesChart.load({
+    columns: data.series
+  });
 }
 
 function vizTrack(view, content) {
@@ -393,6 +437,13 @@ function createEvents() {
     updateCountryLayer();
     vizTrack(`main ${currentCountry.code} view`, currentCountryIndicator.name);
   });
+
+  //chart view trendseries select event
+  d3.select('.trendseries-select').on('change',function(e) {
+    var selected = d3.select('.trendseries-select').node().value;
+    updateTimeseries(selected);
+    vizTrack(`chart ${currentCountry.code} view`, selected);
+  });
 }
 
 function selectCountry(features) {
@@ -427,7 +478,7 @@ function selectCountry(features) {
       bottom: 50
     };
   map.fitBounds(regionBoundaryData[0].bbox, {
-    offset: [ 0, -25],
+    offset: [0, -25] ,
     padding: {right: mapPadding.right, bottom: mapPadding.bottom, left: mapPadding.left},
     linear: true
   });
@@ -470,7 +521,7 @@ function initCountryLayer() {
           .setLngLat(e.lngLat);
       }
       else {
-        if (f.layer.id!='hostilities-layer') {
+        if (f.layer.id!='hostilities-layer' && f.layer.id!='country-labels' && f.layer.id!='adm1-label' && f.layer.id!='town-dots') {
           map.getCanvas().style.cursor = '';
           tooltip.remove();
         }
@@ -1215,7 +1266,8 @@ function initCountryPanel() {
     var obj = {date: d['#affected+date+refugees'], value: d['#affected+refugees']};
     sparklineArray.push(obj);
   });
-  createSparkline(sparklineArray, '.figure.refugees .stat');
+
+  if ($('.figure.refugees .stat .sparkline').length<=0) createSparkline(sparklineArray, '.figure.refugees .stat');
 
   //casualty sparklines
   let killedArray = [];
@@ -1358,6 +1410,7 @@ $( document ).ready(function() {
     if (viewportHeight<696) {
       zoomLevel = 1.4;
     }
+    $('#chart-view').height(viewportHeight-$('.tab-menubar').outerHeight()-30);
 
     //load static map -- will only work for screens smaller than 1280
     if (viewportWidth<=1280) {
@@ -1483,13 +1536,39 @@ $( document ).ready(function() {
     });
   }
 
+
   function initView() {
     //load timeseries for country view 
-    //initTimeseries('', '.country-timeseries-chart');
+    initTimeseries(acledData, '.trendseries-chart');
 
     //check map loaded status
     if (mapLoaded==true && viewInitialized==false)
       deepLinkView();
+
+    //create tab events
+    $('.tab-menubar .tab-button').on('click', function() {
+      $('.tab-button').removeClass('active');
+      $(this).addClass('active');
+      if ($(this).data('id')=='chart-view') {
+        $('#chart-view').show();
+      }
+      else {
+        $('#chart-view').hide();
+      }
+      vizTrack($(this).data('id'), currentCountryIndicator.name);
+    });
+
+    //create chart view country select
+    $('.trendseries-select').append($('<option value="All">All Oblasts</option>')); 
+    var trendseriesSelect = d3.select('.trendseries-select')
+      .selectAll('option')
+      .data(subnationalData)
+      .enter().append('option')
+        .text(function(d) {
+          let name = (d['#adm1+code']=='UA80') ? d['#adm1+name'] + ' (city)' : d['#adm1+name'];
+          return name; 
+        })
+        .attr('value', function (d) { return d['#adm1+code']; });
 
     viewInitialized = true;
   }
