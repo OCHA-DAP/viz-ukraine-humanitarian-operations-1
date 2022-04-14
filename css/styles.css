@@ -1806,6 +1806,8 @@ a:visited {
   .small {
     font-size: 10px;
     line-height: 14px; }
+  label.label-small {
+    margin: 0; }
   .country-panel {
     height: 50%;
     overflow-y: scroll;
