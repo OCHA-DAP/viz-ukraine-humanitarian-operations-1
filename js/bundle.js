@@ -188,6 +188,54 @@ function updateTimeseries(selected) {
   });
 }
 
+
+/***************************/
+/*** PIE CHART FUNCTIONS ***/
+/***************************/
+function createPieChart(data, div) {
+  let requirement = data[0];
+  let funded = data[1];
+  let fundedPercent = funded/requirement;
+
+  let width = (isMobile) ? 25 : 30
+      height = width
+      margin = 1
+
+  let radius = Math.min(width, height)/2 - margin
+
+  let svg = d3.select(div)
+    .append('svg')
+      .attr('class', 'pie-chart')
+      .attr('width', width)
+      .attr('height', height)
+    .append('g')
+      .attr('transform', `translate(${width/2}, ${height/2})`);
+
+  let dataArray = {a: fundedPercent, b: 1-fundedPercent};
+
+  let color = d3.scaleOrdinal()
+    .domain(data)
+    .range(['#418FDE', '#DFDFDF'])
+
+  let pie = d3.pie()
+    .value(function(d) { return d.value; }).sort(null);
+  let formatData = pie(d3.entries(dataArray));
+
+  svg
+    .selectAll('g')
+    .data(formatData)
+    .enter()
+    .append('path')
+    .attr('d', d3.arc()
+      .innerRadius(0)
+      .outerRadius(radius)
+    )
+    .attr('fill', function(d){ return( color(d.data.key)) })
+    .style('stroke-width', 0)
+}
+
+
+
 function vizTrack(view, content) {
   mpTrack(view, content);
   gaTrack('viz interaction', 'switch viz', 'ukr data explorer / '+view, content);
@@ -1292,7 +1340,13 @@ function initCountryPanel() {
   createFigure(fundingDiv, {className: 'funding-regional-allocation', title: 'Regional Refugee Response Plan Funding', stat: formatValue(regionalData['#value+funding+rrp+total+usd']), indicator: '#value+funding+rrp+total+usd'});
   createFigure(fundingDiv, {className: 'funding-humanitarian-required', title: 'CERF Allocation', stat: formatValue(data['#value+cerf+funding+total+usd']), indicator: '#value+cerf+funding+total+usd'});
   createFigure(fundingDiv, {className: 'funding-humanitarian-allocation', title: 'Humanitarian Fund Allocation', stat: formatValue(data['#value+funding+uhf+usd']), indicator: '#value+funding+uhf+usd'});
+
+
+  createPieChart([data['#value+funding+other+required+usd'], data['#value+funding+other+total+usd']], '.figure.funding-flash-required .stat');
+  createPieChart([regionalData['#value+funding+rrp+required+usd'], regionalData['#value+funding+rrp+total+usd']], '.figure.funding-regional-required .stat');
 }
+
+
 
 function createFigure(div, obj) {
   div.append('<div class="figure '+ obj.className +'"><div class="figure-inner"></div></div>');

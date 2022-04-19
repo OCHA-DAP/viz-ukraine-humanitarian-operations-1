@@ -1591,6 +1591,10 @@ a:visited {
       padding-bottom: 15px; }
       .country-panel .figure .figure-inner .title {
         height: 36px; }
+      .country-panel .figure .figure-inner .stat {
+        display: flex;
+        gap: 5px;
+        align-items: center; }
 
 .refugees-timeseries {
   display: none; }
@@ -1691,7 +1695,6 @@ a:visited {
 
 .sparkline {
   fill: none;
-  margin-left: 10px;
   stroke: #007CE1;
   stroke-width: 1px; }
 
@@ -1831,9 +1834,8 @@ a:visited {
           line-height: 15px; }
   .stat {
     font-size: 24px;
-    margin: 20px 0 5px; }
-  .sparkline {
-    margin-left: 6px; } }
+    margin: 20px 0 5px;
+    gap: 3px; } }
 
 @media only screen and (max-height: 850px) {
   .map-legend {
