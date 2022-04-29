@@ -667,10 +667,10 @@ function initBorderCrossingLayer() {
 
 
 function initLocationLabels() {
-  //location data
-  map.addSource('location-data', {
+  //surrounding country data
+  map.addSource('country-data', {
     type: 'geojson',
-    data: locationData,
+    data: countryData,
     generateId: true 
   });
 
@@ -678,8 +678,7 @@ function initLocationLabels() {
   map.addLayer({
     id: 'country-labels',
     type: 'symbol',
-    source: 'location-data',
-    filter: ['==', 'TYPE', 'ADMIN 0'],
+    source: 'country-data',
     layout: {
       'text-field': [
         'format',
@@ -696,6 +695,14 @@ function initLocationLabels() {
       'text-halo-width': 1,
       'text-halo-blur': 1
     }
+  });
+
+
+  //town/capital data
+  map.addSource('location-data', {
+    type: 'geojson',
+    data: locationData,
+    generateId: true 
   });
 
   //towm markers
@@ -789,7 +796,7 @@ function initAcledLayer() {
   let maxCount = d3.max(cleanedCoords, function(d) { return +d['#affected+killed']; });
   let dotScale = d3.scaleSqrt()
     .domain([1, maxCount])
-    .range([5, 15]);
+    .range([3, 13]);
 
   //get unique event types
   let acledEvents = [...new Set(cleanedCoords.map(d => d['#event+type']))];
@@ -838,7 +845,7 @@ function initAcledLayer() {
     paint: {
       'circle-color': eventTypeColorScale,
       'circle-stroke-color': eventTypeColorScale,
-      'circle-opacity': 0.7,
+      'circle-opacity': 0.5,
       'circle-radius': ['get', 'iconSize'],
       'circle-stroke-width': 1,
     }
@@ -1430,7 +1437,7 @@ var globalCountryList = [];
 var currentCountryIndicator = {};
 var currentCountry = {};
 
-var refugeeTimeseriesData, refugeeCountData, casualtiesTimeseriesData, borderCrossingData, acledData, locationData, hostilityData, refugeeLineData, cleanedCoords, idpGeoJson, humIcons = '';
+var refugeeTimeseriesData, refugeeCountData, casualtiesTimeseriesData, borderCrossingData, acledData, locationData, hostilityData, refugeeLineData, cleanedCoords, idpGeoJson, humIcons, countryData = '';
 
 $( document ).ready(function() {
   var prod = (window.location.href.indexOf('ocha-dap')>-1 || window.location.href.indexOf('data.humdata.org')>-1) ? true : false;
@@ -1485,7 +1492,8 @@ $( document ).ready(function() {
       d3.json('data/ukr_refugee_lines.geojson'),
       d3.json('data/wrl_ukr_capp.geojson'),
       d3.json('data/hostilities.geojson'),
-      d3.json('data/macro-region.geojson')
+      d3.json('data/macro-region.geojson'),
+      d3.json('data/country.geojson')
     ]).then(function(data) {
       console.log('Data loaded');
       $('.loader span').text('Initializing map...');
@@ -1508,6 +1516,7 @@ $( document ).ready(function() {
       locationData = data[4];
       hostilityData = data[5];
       idpGeoJson = data[6];
+      countryData = data[7];
             
       //process acled data
       acledData.forEach(function(event) {
