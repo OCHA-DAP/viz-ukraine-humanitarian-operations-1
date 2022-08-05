@@ -1595,6 +1595,8 @@ a:visited {
         display: flex;
         gap: 5px;
         align-items: center; }
+    .country-panel .figure.refugees .figure-inner .title {
+      height: 56px; }
 
 .refugees-timeseries {
   display: none; }
