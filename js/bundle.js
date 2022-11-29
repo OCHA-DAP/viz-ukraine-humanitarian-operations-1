@@ -471,6 +471,13 @@ function deepLinkView() {
     let layer = $('.map-legend.country').find('input[data-layer="'+param+'"]');
     selectLayer(layer);
   }
+
+  //deep link to tabbed view
+  if (location.indexOf('?tab=')>-1) {
+    let view = location.split('tab=')[1];
+    let selectedTab = $(`.tab-menubar .tab-button[data-id="${view}"]`);
+    selectedTab.click();
+  }
 }
 
 function selectLayer(layer) {
@@ -1660,6 +1667,8 @@ $( document ).ready(function() {
       else {
         $('#chart-view').hide();
       }
+      let location = ($(this).data('id')==undefined) ? window.location.pathname : window.location.pathname + '?tab=' + $(this).data('id');
+      window.history.replaceState(null, null, location);
       vizTrack($(this).data('id'), currentCountryIndicator.name);
     });
 
