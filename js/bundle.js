@@ -1,6 +1,7 @@
 window.$ = window.jQuery = require('jquery');
 var bbox = require('@turf/bbox');
 var turfHelpers = require('@turf/helpers');
+var format = require('date-fns/format');
 /******************/
 /*** SPARKLINES ***/
 /******************/
@@ -102,13 +103,7 @@ function createTimeSeries(data, div) {
     bindto: div,
     data: {
       x: 'x',
-      columns: data.series,
-      type: 'bar'
-    },
-    bar: {
-        width: {
-            ratio: 0.5
-        }
+      columns: data.series
     },
     color: {
       pattern: colorArray
@@ -123,6 +118,9 @@ function createTimeSeries(data, div) {
       x: {
         type: 'timeseries',
         tick: { 
+          format: function (x) { 
+            return (x.getMonth()+1) + '/' + x.getDate() + '/' + x.getYear(); 
+          },
           outer: false
         }
       },
@@ -154,7 +152,7 @@ function createTimeSeries(data, div) {
         let id = d[0].index + 1;
         let date = new Date(d[0].x);
         let total = 0;
-        let html = `<table><thead><tr><th colspan="2">${moment(date).format('MMM D, YYYY')}</th></tr><thead>`;
+        let html = `<table><thead><tr><th colspan="2">${format(date, 'MMM d, yyyy')}</th></tr><thead>`;
         for (var i=0; i<=events.length-1; i++) {
           if (events[i][id]>0) {
             html += `<tr><td>${events[i][0]}</td><td>${events[i][id]}</td></tr>`;
@@ -887,7 +885,7 @@ function initAcledLayer() {
     map.getCanvas().style.cursor = 'pointer';
     let prop = e.features[0].properties;
     let date = new Date(prop.date);
-    let content = `<span class='small'>${moment(date).format('MMM D, YYYY')}</span>`;
+    let content = `<span class='small'>${format(date, 'MMM d, yyyy')}</span>`;
     content += `<h2>${prop.event_type}</h2>`;
     content += `<p>${prop.notes}</p>`;
     content += `<p>Fatalities: ${prop.fatalities}</p>`;
@@ -1564,7 +1562,6 @@ $( document ).ready(function() {
 
       //parse data
       var allData = data[0];
-      console.log(allData)
       regionalData = allData.regional_data[0];
       nationalData = allData.national_data;
       subnationalData = allData.subnational_data;
