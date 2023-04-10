@@ -51,37 +51,30 @@ function initTimeseries(data, div) {
 let eventsArray;
 function formatData(data) {
   let events = d3.nest()
-    .key(function(d) { return d['#event+type']; })
     .key(function(d) { return d['#date+occurred']; })
+    .key(function(d) { return d['#event+type']; })
     .rollup(function(leaves) { return leaves.length; })
     .entries(data);
-  //events.sort((a, b) => (a.key > b.key) ? 1 : -1);
 
   let dates = [... new Set(acledData.map((d) => d['#date+occurred']))];
   let totals = [];
 
   eventsArray = [];
-  let count = 0;
   events.forEach(function(event) {
     let array = [];
     dates.forEach(function(date, index) {
       let val = 0;
-      event.values.forEach(function(e) {
+      if (event.key==date) {
+        let sum = 0;
+        event.values.forEach(function (v) {
+          val += v.value;
+        });
 
-        //if (e.key=='2023-03-31') console.log(e);
-        if (e.key==date) {
-          val = e.value;
-        }
-      });
-      totals[index] = (totals[index]==undefined) ? val : totals[index]+val; //save aggregate of all events per day
-      //console.log(date, totals[index])
-      array.push(val); //save each event per day
+        totals[index] = (totals[index]==undefined) ? val : totals[index]+val; //save aggregate of all events per day
+        eventsArray[date] = event.values; //save event breakdown by date
+      };
     });
-    array.reverse();
-    array.unshift(event.key);
-    eventsArray.push(array);
   });
-  //console.log(count)
 
   //format for c3
   dates.unshift('x');
@@ -138,7 +131,6 @@ function createTimeSeries(data, div) {
         },
         tick: { 
           outer: false,
-          //format: d3.format('d')
           format: function(d) {
             if (Math.floor(d) != d){
               return;
@@ -154,16 +146,13 @@ function createTimeSeries(data, div) {
     transition: { duration: 500 },
     tooltip: {
       contents: function (d, defaultTitleFormat, defaultValueFormat, color) {
-        let events = eventsArray;
-        let id = d[0].index + 1;
         let date = new Date(d[0].x);
-        let total = 0;
+        let dateID = format(date, 'yyyy-MM-dd');
+        let events = eventsArray[dateID];
+        let total = d[0].value;
         let html = `<table><thead><tr><th colspan="2">${format(date, 'MMM d, yyyy')}</th></tr><thead>`;
         for (var i=0; i<=events.length-1; i++) {
-          if (events[i][id]>0) {
-            html += `<tr><td>${events[i][0]}</td><td>${events[i][id]}</td></tr>`;
-            total += events[i][id];
-          }
+          html += `<tr><td>${events[i].key}</td><td>${events[i].value}</td></tr>`;
         };
         html += `<tr><td><b>Total</b></td><td><b>${total}</b></td></tr></table>`;
         return html;
